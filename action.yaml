@@ -1,0 +1,56 @@
+name: helm-deploy
+description: Deploy/upgrade a local Helm chart to a given GKE cluster
+inputs:
+  cluster:
+    description: Name of GKE cluster
+    required: true
+  location:
+    description: Region of GKE cluster (eg. europe-west1)
+    required: true
+  project:
+    description: GCP Project of GKE cluster
+    required: true
+  chartPath:
+    description: Path to local Helm chart getting deployed/upgraded
+    required: true
+  release:
+    description: Name of Helm release getting deployed/upgraded
+    required: true
+  namespace:
+    description: Namespace for Helm release
+    required: false
+    default: default
+  values:
+    description: A newline separated list of Helm input values
+    required: false
+  valueFiles:
+    description: A newline separated list of Helm input value files
+    required: false
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        # Configure kubectl
+        rm -rf "~/.kube/config"
+        gcloud container clusters get-credentials ${{ inputs.cluster }} \
+          --region ${{ inputs.location }} \
+          --project ${{ inputs.project }}
+
+        # Construct a Helm CLI command based on input values
+        helmCommand=( helm upgrade ${{ inputs.release }} ${{ inputs.chartPath }} --install -n ${{ inputs.namespace }})
+
+        while read -r VAL; do
+          helmCommand+=( --set \"$VAL\" )
+        done <<< $(echo "${{ inputs.values }}" | awk 'NF { $1=$1; print }' )
+
+        while read -r FILE; do
+          helmCommand+=( -f $FILE )
+        done <<< $(echo "${{ inputs.valueFiles }}" | awk 'NF { $1=$1; print }' )
+
+        # Print the command
+        echo "${helmCommand[@]}"
+
+        # Execute the command
+        echo "${helmCommand[@]}" | bash -
+
