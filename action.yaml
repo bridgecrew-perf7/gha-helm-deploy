@@ -27,9 +27,9 @@ inputs:
     description: A newline separated list of Helm input value files
     required: false
   environment:
-    description: 'test' or 'prod', used to select the appropriate $ENV.yaml file from ./deploy dirs
+    description: test or prod, used to select the appropriate $ENV.yaml file from ./deploy dirs
     required: false
-    default: "prod"
+    default: prod
 runs:
   using: composite
   steps:
