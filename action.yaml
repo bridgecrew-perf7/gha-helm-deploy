@@ -26,10 +26,16 @@ inputs:
   valueFiles:
     description: A newline separated list of Helm input value files
     required: false
+  environment:
+    description: `test` or `prod`, used to select the appropriate $ENV.yaml file from ./deploy dirs
+    required: false
+    default: "prod"
 runs:
   using: composite
   steps:
     - shell: bash
+      env:
+        ENV: ${{ inputs.environment }}
       run: |
         # Configure kubectl
         rm -rf "~/.kube/config"
