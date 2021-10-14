@@ -38,7 +38,7 @@ runs:
           --project ${{ inputs.project }}
 
         # Construct a Helm CLI command based on input values
-        helmCommand=( helm upgrade ${{ inputs.release }} ${{ inputs.chartPath }} --install -n ${{ inputs.namespace }})
+        helmCommand=( helm upgrade ${{ inputs.release }} ${{ inputs.chartPath }} --force --install -n ${{ inputs.namespace }})
 
         while read -r VAL; do
           helmCommand+=( --set \"$VAL\" )
